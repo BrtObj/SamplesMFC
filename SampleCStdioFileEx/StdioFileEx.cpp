@@ -21,7 +21,7 @@ CStdioFileEx::CStdioFileEx() :CStdioFile()
 }
 //CStdioFileEx::CStdioFileEx(FILE* pOpenStream) : CStdioFile(pOpenStream)
 //{
-//	//CString filepath = pOpenStream->_tmpfname;//?  尚不清楚File*结构
+//	//CString filepath = pOpenStream->_tmpfname;//  尚不清楚File*结构
 //	//m_FileType = GetFileType(filepath);
 //}
 CStdioFileEx::CStdioFileEx(LPCTSTR lpszFileName, UINT nOpenFlags) : CStdioFile(lpszFileName, ProcessFlags(lpszFileName, nOpenFlags, m_FileType))

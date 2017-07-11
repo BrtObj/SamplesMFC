@@ -6,25 +6,24 @@
 #include "CStdioFileExApp.h"
 #include "CStdioFileExAppDlg.h"
 #include "afxdialogex.h"
+#include "StdioFileEx.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-
 // CAboutDlg dialog used for App About
-
 class CAboutDlg : public CDialogEx
 {
 public:
 	CAboutDlg();
 
-// Dialog Data
+	// Dialog Data
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_ABOUTBOX };
 #endif
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 // Implementation
@@ -153,9 +152,40 @@ HCURSOR CCStdioFileExAppDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-
-
 void CCStdioFileExAppDlg::OnBnClickedOpen()
 {
 	// TODO: Add your control notification handler code here
+	// TODO: Add your control notification handler code here
+	CString strFilePath = _T("");
+	CFileDialog dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY, _T("All Files(*.*)|*.*||"), NULL);
+	if (dlgFile.DoModal())
+	{
+		strFilePath = dlgFile.GetPathName();
+	}
+	SetDlgItemText(IDC_PATH, strFilePath);
+	if(!PathFileExists(strFilePath))
+	{
+		AfxMessageBox(_T("文件不存在！"));
+		return;
+	}
+
+	CStdioFileEx exFile;
+	if (exFile.Open(strFilePath, CFile::modeRead))
+	{
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_RESULT);
+		CString strread, strtemp;
+		pEdit->SetSel(0, -1);
+		pEdit->Clear();
+		while (exFile.ReadString(strtemp))
+		{
+			strread += strtemp;
+		}
+		pEdit->ReplaceSel(strread);
+		UpdateData(true);
+	}
+	else
+	{
+		AfxMessageBox(_T("文件读取失败！"));
+		return;
+	}
 }

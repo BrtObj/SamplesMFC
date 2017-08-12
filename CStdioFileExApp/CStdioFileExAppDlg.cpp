@@ -45,9 +45,6 @@ END_MESSAGE_MAP()
 
 
 // CCStdioFileExAppDlg dialog
-
-
-
 CCStdioFileExAppDlg::CCStdioFileExAppDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_CSTDIOFILEEXAPP_DIALOG, pParent)
 {
@@ -64,6 +61,7 @@ BEGIN_MESSAGE_MAP(CCStdioFileExAppDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_OPEN, &CCStdioFileExAppDlg::OnBnClickedOpen)
+	ON_EN_CHANGE(IDC_RESULT, &CCStdioFileExAppDlg::OnEnChangeResult)
 END_MESSAGE_MAP()
 
 
@@ -124,6 +122,17 @@ void CCStdioFileExAppDlg::OnPaint()
 {
 	if (IsIconic())
 	{
+		//IsIconic()作用是判断窗口是否处于最小化状态（点击了最小化按钮之后）。
+		//对于普通的对话框来说，如果你在if(IsIconic()) 下面加入AfxMessageBox("haha") ，你会发现消息框并不会弹出。
+		//原因是，if(IsIconic()) 这段代码是在OnPaint()函数内，当你最小化了对话框之后，虽然IsIconic()的值是TRUE，但是OnPaint()函数并不会运行。因为OnPaint()响应的是WM_PAINT消息，而WM_PAINT消息是针对客户区的。一个最小化了的窗口不需要重绘客户区。
+		//为了验证这一点，可以设置一定时器，在OnTimer()函数里写上
+		//if (IsIconic()) MessageBeep(MB_OK);
+		//当你点击最小化按钮后，你会听见嘟嘟声。
+		//那么这段代码究竟有什么用？它是不是永远不会被执行呢？当然不是。举两个例子。
+		//第一，如果你强行发送WM_PAINT消息，它会执行。
+		//第二，特殊的对话框。比如一个ToolBox风格的对话框。这个对话框不显示在任务栏，在最小化之后它会变成一个很小的一条显示在桌面上。这时如果它被遮挡，就会出发WM_PAINT消息，从而执行那段代码。
+		//总之，一般情况下可以不要这段代码，它的特殊用途我也不是很了解，但是我们至少可以知道它是怎么样工作的。
+
 		CPaintDC dc(this); // device context for painting
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
@@ -188,4 +197,29 @@ void CCStdioFileExAppDlg::OnBnClickedOpen()
 		AfxMessageBox(_T("文件读取失败！"));
 		return;
 	}
+}
+
+
+void CCStdioFileExAppDlg::OnEnChangeResult()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialogEx::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+	TEXTMETRIC tm;
+	CRect rect;
+	GetDlgItem(IDC_RESULT)->GetClientRect(&rect);
+	CDC* pdc = (CDC*)GetDlgItem(IDC_RESULT)->GetDC();
+	::GetTextMetrics(pdc->m_hDC, &tm);
+	GetDlgItem(IDC_RESULT)->ReleaseDC(pdc);
+
+ 	int nMaxLineCount = rect.bottom / (tm.tmHeight-tm.tmDescent);
+	int nLineCount = ((CEdit*)GetDlgItem(IDC_RESULT))->GetLineCount();
+
+	if(nLineCount > nMaxLineCount)
+		GetDlgItem(IDC_RESULT)->ShowScrollBar(SB_VERT, TRUE);
+	else
+		GetDlgItem(IDC_RESULT)->ShowScrollBar(SB_VERT, FALSE);
 }
